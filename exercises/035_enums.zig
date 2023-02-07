@@ -20,7 +20,7 @@
 const std = @import("std");
 
 // Please complete the enum!
-const Ops = enum { ??? };
+const Ops = enum { inc, pow, dec };
 
 pub fn main() void {
     const operations = [_]Ops{
@@ -36,13 +36,13 @@ pub fn main() void {
 
     for (operations) |op| {
         switch (op) {
-            Ops.inc => {
+            .inc => { // <-- equals to Ops.inc
                 current_value += 1;
             },
-            Ops.dec => {
+            .dec => { // <-- equals to Ops.dec
                 current_value -= 1;
             },
-            Ops.pow => {
+            .pow => { // <-- equals to Ops.pow
                 current_value *= current_value;
             },
             // No "else" needed! Why is that?
