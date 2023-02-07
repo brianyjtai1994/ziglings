@@ -19,7 +19,8 @@ pub fn main() void {
     // the idiomatic type to use for array indexing.
     //
     // There IS a problem on this line, but 'usize' isn't it.
-    const x: usize = 1;
+    var x: usize = 1;
+    var y: usize = 0;
 
     // Note: When you want to declare memory (an array in this
     // case) without putting anything in it, you can set it to
@@ -30,13 +31,13 @@ pub fn main() void {
     // 'lang' array we just created by indexing the array
     // 'letters' with the variable 'x'. As you can see above, x=1
     // to begin with.
-    lang[0] = letters[x];
 
-    x = 3;
-    lang[???] = letters[x];
-
-    x = ???;
-    lang[2] = letters[???];
+    while (y <= 2) : ({
+        x += 2;
+        y += 1;
+    }) {
+        lang[y] = letters[x];
+    }
 
     // We want to "Program in Zig!" of course:
     std.debug.print("Program in {s}!\n", .{lang});
