@@ -24,7 +24,7 @@ const Elephant = struct {
 
     pub fn print(self: *Elephant) void {
         // Prints elephant letter and [v]isited
-        var v: u8 = if (self.visited) 'v' else ' ';
+        const v: u8 = if (self.visited) 'v' else ' ';
         std.debug.print("{u}{u} ", .{ self.letter, v });
     }
 };
@@ -46,7 +46,7 @@ pub fn main() void {
 // This function visits all elephants once, starting with the
 // first elephant and following the tails to the next elephant.
 fn visitElephants(first_elephant: *Elephant) void {
-    var e = first_elephant;
+    var e: *Elephant = first_elephant;
 
     while (true) {
         e.print();
@@ -54,7 +54,7 @@ fn visitElephants(first_elephant: *Elephant) void {
 
         // This gets the next elephant or stops.
         if (e.hasTail()) {
-            e = e.???; // Which method do we want here?
+            e = e.getTail(); // Which method do we want here?
         } else {
             break;
         }
