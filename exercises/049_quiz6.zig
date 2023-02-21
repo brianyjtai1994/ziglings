@@ -16,28 +16,32 @@ const Elephant = struct {
     visited: bool = false,
 
     // Elephant tail methods!
-    pub fn getTail(self: *Elephant) *Elephant {
+    fn getTail(self: *Elephant) *Elephant {
         return self.tail.?; // Remember, this means "orelse unreachable"
     }
 
-    pub fn hasTail(self: *Elephant) bool {
+    fn hasTail(self: *Elephant) bool {
         return (self.tail != null);
     }
 
     // Your Elephant trunk methods go here!
     // ---------------------------------------------------
+    fn getTrunk(self: *Elephant) *Elephant {
+        return self.trunk.?;
+    }
 
-    ???
-
+    fn hasTrunk(self: *Elephant) bool {
+        return (self.trunk != null);
+    }
     // ---------------------------------------------------
 
-    pub fn visit(self: *Elephant) void {
+    fn visit(self: *Elephant) void {
         self.visited = true;
     }
 
-    pub fn print(self: *Elephant) void {
+    fn print(self: *Elephant) void {
         // Prints elephant letter and [v]isited
-        var v: u8 = if (self.visited) 'v' else ' ';
+        const v: u8 = if (self.visited) 'v' else ' ';
         std.debug.print("{u}{u} ", .{ self.letter, v });
     }
 };
@@ -62,7 +66,7 @@ pub fn main() void {
 
 // This function visits all elephants twice, tails to trunks.
 fn visitElephants(first_elephant: *Elephant) void {
-    var e = first_elephant;
+    var e: *Elephant = first_elephant;
 
     // We follow the tails!
     while (true) {
