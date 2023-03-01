@@ -8,7 +8,7 @@ const print = std.debug.print;
 // When changing this version, be sure to also update README.md in two places:
 //     1) Getting Started
 //     2) Version Changes
-const needed_version = std.SemanticVersion.parse("0.11.0-dev.1568") catch unreachable;
+const needed_version = std.SemanticVersion.parse("0.11.0-dev.1711") catch unreachable;
 
 const Exercise = struct {
     /// main_file must have the format key_name.zig.
@@ -30,6 +30,10 @@ const Exercise = struct {
     /// This exercise makes use of the async feature.
     /// We need to keep track of this, so we compile without the self hosted compiler
     @"async": bool = false,
+
+    /// This exercise makes use of C functions
+    /// We need to keep track of this, so we compile with libc
+    C: bool = false,
 
     /// Returns the name of the main file with .zig stripped.
     pub fn baseName(self: Exercise) []const u8 {
@@ -419,6 +423,7 @@ const exercises = [_]Exercise{
         .output = "I say hello!",
     },
     // disabled because of https://github.com/ratfactor/ziglings/issues/163
+    // direct link: https://github.com/ziglang/zig/issues/6025
     // .{
     //     .main_file = "084_async.zig",
     //     .output = "foo() A",
@@ -460,6 +465,20 @@ const exercises = [_]Exercise{
     //     .output = "ABCDEF",
     //     .@"async" = true,
     // },
+    .{
+        .main_file = "092_interfaces.zig",
+        .output = "Daily Insect Report:\nAnt is alive.\nBee visited 17 flowers.\nGrasshopper hopped 32 meters.",
+    },
+    .{
+        .main_file = "093_hello_c.zig",
+        .output = "Hello C from Zig! - C result is 17 chars written.",
+        .C = true,
+    },
+    .{
+        .main_file = "094_c_math.zig",
+        .output = "The normalized angle of 765.2 degrees is 45.2 degrees.",
+        .C = true,
+    },
     .{
         .main_file = "999_the_end.zig",
         .output = "\nThis is the end for now!\nWe hope you had fun and were able to learn a lot, so visit us again when the next exercises are available.",
@@ -564,10 +583,7 @@ pub fn build(b: *Builder) void {
         const file_path = std.fs.path.join(b.allocator, &[_][]const u8{
             if (use_healed) "patches/healed" else "exercises", ex.main_file,
         }) catch unreachable;
-        const build_step = b.addExecutable(.{
-            .name = base_name,
-            .root_source_file = .{ .path = file_path }
-        });
+        const build_step = b.addExecutable(.{ .name = base_name, .root_source_file = .{ .path = file_path } });
 
         build_step.install();
 
@@ -641,7 +657,7 @@ const ZiglingStep = struct {
 
         print("Checking {s}...\n", .{self.exercise.main_file});
 
-        const cwd = self.builder.build_root;
+        const cwd = self.builder.build_root.path.?;
 
         const argv = [_][]const u8{exe_file};
 
@@ -727,6 +743,11 @@ const ZiglingStep = struct {
         //     zig_args.append("-fstage1") catch unreachable;
         // }
 
+        // Enable C support for exercises that use C functions
+        if (self.exercise.C) {
+            zig_args.append("-lc") catch unreachable;
+        }
+
         if (builder.color != .auto) {
             zig_args.append("--color") catch unreachable;
             zig_args.append(@tagName(builder.color)) catch unreachable;
@@ -736,7 +757,7 @@ const ZiglingStep = struct {
         zig_args.append(builder.pathFromRoot(zig_file)) catch unreachable;
 
         zig_args.append("--cache-dir") catch unreachable;
-        zig_args.append(builder.pathFromRoot(builder.cache_root)) catch unreachable;
+        zig_args.append(builder.pathFromRoot(builder.cache_root.path.?)) catch unreachable;
 
         zig_args.append("--enable-cache") catch unreachable;
 
