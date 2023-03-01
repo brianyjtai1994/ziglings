@@ -87,7 +87,7 @@ pub fn main() void {
     // Let's assign the std.debug.print function to a const named
     // "print" so that we can use this new name later!
 
-    const print = ???;
+    const print = std.debug.print;
 
     // Now let's look at assigning and pointing to values in Zig.
     //
@@ -105,7 +105,9 @@ pub fn main() void {
 
     var glorp_access1: Character = glorp;
     glorp_access1.gold = 111;
-    print("1:{}!. ", .{glorp.gold == glorp_access1.gold});
+    print("var glorp_access1: Character = glorp;\n", .{});
+    print("glorp_access1.gold = 111;\n", .{});
+    print("(1) glorp.gold == glorp_access1.gold: {}!. \n", .{glorp.gold == glorp_access1.gold});
 
     // NOTE:
     //
@@ -121,7 +123,9 @@ pub fn main() void {
 
     var glorp_access2: *Character = &glorp;
     glorp_access2.gold = 222;
-    print("2:{}!. ", .{glorp.gold == glorp_access2.gold});
+    print("var glorp_access2: *Character = &glorp;\n", .{});
+    print("glorp_access2.gold = 222;\n", .{});
+    print("(2) glorp.gold == glorp_access2.gold: {}!. \n", .{glorp.gold == glorp_access2.gold});
 
     // "glorp_access3" is interesting. It's also a pointer, but it's a
     // const. Won't that disallow changing the gold value? No! As you
@@ -131,7 +135,9 @@ pub fn main() void {
 
     const glorp_access3: *Character = &glorp;
     glorp_access3.gold = 333;
-    print("3:{}!. ", .{glorp.gold == glorp_access3.gold});
+    print("const glorp_access3: *Character = &glorp;\n", .{});
+    print("glorp_access3.gold = 333;\n", .{});
+    print("(3) glorp.gold == glorp_access3.gold: {}!. \n", .{glorp.gold == glorp_access3.gold});
 
     // NOTE:
     //
@@ -152,13 +158,13 @@ pub fn main() void {
     print("XP before:{}, ", .{glorp.experience});
 
     // Fix 1 of 2 goes here:
-    levelUp(glorp, reward_xp);
+    levelUp(&glorp, reward_xp);
 
     print("after:{}.\n", .{glorp.experience});
 }
 
 // Fix 2 of 2 goes here:
-fn levelUp(character_access: Character, xp: u32) void {
+fn levelUp(character_access: *Character, xp: u32) void {
     character_access.experience += xp;
 }
 
