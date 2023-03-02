@@ -50,6 +50,7 @@ const TripError = error{ Unreachable, EatenByAGrue };
 // assign the paths later. And why is that? Because paths contain
 // pointers to places and assigning them now would create a dependency
 // loop!
+//
 const Place = struct {
     name: []const u8,
     paths: []const Path = undefined,
@@ -64,23 +65,23 @@ var f = Place{ .name = "Fox Pond" };
 
 //           The hermit's hand-drawn ASCII map
 //  +---------------------------------------------------+
-//  |         * Archer's Point                ~~~~      |
+//  |         * Archer's Point (a)            ~~~~      |
 //  | ~~~                              ~~~~~~~~         |
 //  |   ~~~| |~~~~~~~~~~~~      ~~~~~~~                 |
-//  |         Bridge     ~~~~~~~~                       |
+//  |         Bridge (b) ~~~~~~~~                       |
 //  |  ^             ^                           ^      |
 //  |     ^ ^                      / \                  |
-//  |    ^     ^  ^       ^        |_| Cottage          |
-//  |   Dogwood Grove                                   |
+//  |    ^     ^  ^       ^        |_| Cottage (c)      |
+//  |   Dogwood Grove (d)                               |
 //  |                  ^     <boat>                     |
 //  |  ^  ^  ^  ^          ~~~~~~~~~~~~~    ^   ^       |
-//  |      ^             ~~ East Pond ~~~               |
+//  |      ^             ~~ East Pond ~~~  <-- (e)      |
 //  |    ^    ^   ^       ~~~~~~~~~~~~~~                |
 //  |                           ~~          ^           |
 //  |           ^            ~~~ <-- short waterfall    |
 //  |   ^                 ~~~~~                         |
 //  |            ~~~~~~~~~~~~~~~~~                      |
-//  |          ~~~~ Fox Pond ~~~~~~~    ^         ^     |
+//  |  (f) --> ~~~~ Fox Pond ~~~~~~~    ^         ^     |
 //  |      ^     ~~~~~~~~~~~~~~~           ^ ^          |
 //  |                ~~~~~                              |
 //  +---------------------------------------------------+
@@ -107,7 +108,7 @@ const Path = struct {
 const a_paths = [_]Path{
     Path{
         .from = &a, // from: Archer's Point
-        .to = &b,   //   to: Bridge
+        .to = &b, //   to: Bridge
         .dist = 2,
     },
 };
@@ -115,12 +116,12 @@ const a_paths = [_]Path{
 const b_paths = [_]Path{
     Path{
         .from = &b, // from: Bridge
-        .to = &a,   //   to: Archer's Point
+        .to = &a, //   to: Archer's Point
         .dist = 2,
     },
     Path{
         .from = &b, // from: Bridge
-        .to = &d,   //   to: Dogwood Grove
+        .to = &d, //   to: Dogwood Grove
         .dist = 1,
     },
 };
@@ -128,12 +129,12 @@ const b_paths = [_]Path{
 const c_paths = [_]Path{
     Path{
         .from = &c, // from: Cottage
-        .to = &d,   //   to: Dogwood Grove
+        .to = &d, //   to: Dogwood Grove
         .dist = 3,
     },
     Path{
         .from = &c, // from: Cottage
-        .to = &e,   //   to: East Pond
+        .to = &e, //   to: East Pond
         .dist = 2,
     },
 };
@@ -141,17 +142,17 @@ const c_paths = [_]Path{
 const d_paths = [_]Path{
     Path{
         .from = &d, // from: Dogwood Grove
-        .to = &b,   //   to: Bridge
+        .to = &b, //   to: Bridge
         .dist = 1,
     },
     Path{
         .from = &d, // from: Dogwood Grove
-        .to = &c,   //   to: Cottage
+        .to = &c, //   to: Cottage
         .dist = 3,
     },
     Path{
         .from = &d, // from: Dogwood Grove
-        .to = &f,   //   to: Fox Pond
+        .to = &f, //   to: Fox Pond
         .dist = 7,
     },
 };
@@ -159,20 +160,20 @@ const d_paths = [_]Path{
 const e_paths = [_]Path{
     Path{
         .from = &e, // from: East Pond
-        .to = &c,   //   to: Cottage
+        .to = &c, //   to: Cottage
         .dist = 2,
     },
     Path{
         .from = &e, // from: East Pond
-        .to = &f,   //   to: Fox Pond
-        .dist = 1,  // (one-way down a short waterfall!)
+        .to = &f, //   to: Fox Pond
+        .dist = 1, // (one-way down a short waterfall!)
     },
 };
 
 const f_paths = [_]Path{
     Path{
         .from = &f, // from: Fox Pond
-        .to = &d,   //   to: Dogwood Grove
+        .to = &d, //   to: Dogwood Grove
         .dist = 7,
     },
 };
@@ -192,8 +193,8 @@ const TripItem = union(enum) {
             // Oops! The hermit forgot how to capture the union values
             // in a switch statement. Please capture both values as
             // 'p' so the print statements work!
-            .place => print("{s}", .{p.name}),
-            .path => print("--{}->", .{p.dist}),
+            .place => |p| print("{s}", .{p.name}),
+            .path => |p| print("--{}->", .{p.dist}),
         }
     }
 };
@@ -255,7 +256,7 @@ const HermitsNotebook = struct {
             // dereference and optional value "unwrapping" look
             // together. Remember that you return the address with the
             // "&" operator.
-            if (place == entry.*.?.place) return entry;
+            if (place == entry.*.?.place) return &entry.*.?;
             // Try to make your answer this long:__________;
         }
         return null;
@@ -278,7 +279,7 @@ const HermitsNotebook = struct {
         if (existing_entry == null) {
             self.entries[self.end_of_entries] = note;
             self.end_of_entries += 1;
-        } else if (note.dist_to_reach < existing_entry.?.dist_to_reach) {
+        } else if (note.dist_to_reach < existing_entry.?.*.dist_to_reach) {
             existing_entry.?.* = note;
         }
     }
@@ -309,7 +310,7 @@ const HermitsNotebook = struct {
     //
     // Looks like the hermit forgot something in the return value of
     // this function. What could that be?
-    fn getTripTo(self: *HermitsNotebook, trip: []?TripItem, dest: *Place) void {
+    fn getTripTo(self: *HermitsNotebook, trip: []?TripItem, dest: *Place) TripError!void {
         // We start at the destination entry.
         const destination_entry = self.getEntry(dest);
 
@@ -323,7 +324,7 @@ const HermitsNotebook = struct {
 
         // Variables hold the entry we're currently examining and an
         // index to keep track of where we're appending trip items.
-        var current_entry = destination_entry.?;
+        var current_entry = destination_entry.?.*;
         var i: u8 = 0;
 
         // At the end of each looping, a continue expression increments
@@ -346,7 +347,7 @@ const HermitsNotebook = struct {
             // Note: you do not need to fix anything here.
             const previous_entry = self.getEntry(current_entry.coming_from.?);
             if (previous_entry == null) return TripError.EatenByAGrue;
-            current_entry = previous_entry.?;
+            current_entry = previous_entry.?.*;
         }
     }
 };
@@ -355,8 +356,8 @@ pub fn main() void {
     // Here's where the hermit decides where he would like to go. Once
     // you get the program working, try some different Places on the
     // map!
-    const start = &a;        // Archer's Point
-    const destination = &f;  // Fox Pond
+    const start = &a; // Archer's Point
+    const destination = &f; // Fox Pond
 
     // Store each Path array as a slice in each Place. As mentioned
     // above, we needed to delay making these references to avoid
