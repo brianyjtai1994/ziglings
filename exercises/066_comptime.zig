@@ -46,7 +46,7 @@ pub fn main() void {
     const const_int = 12345;
     const const_float = 987.654;
 
-    print("Immutable: {}, {d:.3}; ", .{ const_int, const_float });
+    print("Immutable: {}, {d:.3}\n", .{ const_int, const_float });
 
     // But something changes when we assign the exact same values
     // to identifiers mutably with "var".
@@ -62,20 +62,20 @@ pub fn main() void {
     // types with specific sizes. The comptime numbers will be
     // coerced (if they'll fit!) into your chosen runtime types.
     // For this it is necessary to specify a size, e.g. 32 bit.
-    var var_int = 12345;
-    var var_float = 987.654;
+    var var_int: i32 = 12345;
+    var var_float: f32 = 987.654;
 
     // We can change what is stored at the areas set aside for
     // "var_int" and "var_float" in the running compiled program.
     var_int = 54321;
     var_float = 456.789;
 
-    print("Mutable: {}, {d:.3}; ", .{ var_int, var_float });
+    print("Mutable: {}, {d:.3}\n", .{ var_int, var_float });
 
     // Bonus: Now that we're familiar with Zig's builtins, we can
     // also inspect the types to see what they are, no guessing
     // needed!
-    print("Types: {}, {}, {}, {}\n", .{
+    print("Types:\n  {},\n  {},\n  {},\n  {}\n", .{
         @TypeOf(const_int),
         @TypeOf(const_float),
         @TypeOf(var_int),
